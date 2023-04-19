@@ -22,11 +22,10 @@ project(vis
  
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-add_executable(vis src/main.cpp)
-target_include_directories(vis PRIVATE src)
- 
-target_link_libraries(vis
-  PRIVATE ftxui::screen
-  PRIVATE ftxui::dom
-  PRIVATE ftxui::component # Not needed for this example.
-)
+add_executable(vis 
+    src/main.cpp 
+    src/calendar.cpp
+    )
+
+find_library(NCURSES_LIB NAMES ncurses)
+target_link_libraries(vis ncurses)

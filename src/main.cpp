@@ -1,39 +1,23 @@
-#include <stdio.h>
 #include <iostream>
-#include <ftxui/dom/elements.hpp>
-#include <ftxui/component/screen_interactive.hpp>
-#include <ftxui/component/component.hpp>
-#include <ftxui/component/event.hpp> 
+#include <string.h>
+#include <ncurses.h>
+#include <curses.h>
+#include "calendar.hpp"
+
+#define MIN_WIDTH 100
+#define MIN_HEIGHT 40
 
 using namespace std; 
-using namespace ftxui; 
 
 int main() {
+    initscr();   
 
-    auto screen = ScreenInteractive::FitComponent();
+    int active_cell = 0; 
 
-    auto component = Renderer([&screen] {
-        auto make_box = [](int x, int y, int i) {
-            string title = to_string(i);
-            return window(text(""), text(title) | hcenter | size(WIDTH, EQUAL, x) | size(HEIGHT, EQUAL, y));
-        };
+    for (;;) {
 
-        Element calendar = hflow({
-            make_box(12,7,0),
-            make_box(7,7,1),
-            make_box(7,7,2),
-            make_box(7,7,3),
-            make_box(7,7,4),
-            make_box(7,7,5),
-            make_box(7,7,6),
-            make_box(7,7,7)
-        }); 
-         
-        return window(text("Vi Scheduler"), vbox(calendar));
-    });
-   
-
-    screen.Loop(component);
+        refresh(); 
+    }
 
     return 0; 
 }
