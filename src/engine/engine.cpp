@@ -15,28 +15,38 @@ Engine::~Engine() {
     delete this->calendar;
 }
 
-void Engine::draw(WINDOW *win) {
+void Engine::ui_draw(WINDOW *win) {
     this->cells_table.clear(); 
 
     box(win, 0, 0);
 
-    calendar_information date_info = this->calendar->get_info();
-
-    
     switch (this->view_mode) {
         case MONTH_VIEW:
-            for (int i = 1; i <= date_info.current_month_days; i++) 
-                mvwprintw(win, i, 3, "D%d", i);
+            this->ui_month_draw(win);
             break;
         case MONTHS_VIEW:
-            for (int i = 1; i <= 12; i++) 
-                wprintw(win, "M%d", i);
+            this->ui_months_draw(win);
             break;
     }
 
-    wprintw(win, "\n");
-
-    mvwprintw(win, LINES-1, 0, "Year: %d, Month: %d, Day: %d", date_info.current_year, date_info.current_month, date_info.current_day);
+    this->ui_bottom_draw(win);
 
     wrefresh(win);
+}
+
+void Engine::ui_month_draw(WINDOW *win) {
+    
+}
+
+void Engine::ui_months_draw(WINDOW *win) {
+
+}
+
+void Engine::ui_bottom_draw(WINDOW *win) {
+    if (VIS_COLORING) wattron(win, COLOR_PAIR(1));
+
+    calendar_information date_info = this->calendar->get_info();
+    mvwprintw(win, LINES-2, 1, "Year: %d, Month: %d, Day: %d", date_info.current_year, date_info.current_month, date_info.current_day);
+
+    if (VIS_COLORING) wattroff(win, COLOR_PAIR(1));
 }

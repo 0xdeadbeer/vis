@@ -4,6 +4,7 @@
 #include <ncurses.h>
 #include <vector>
 #include "../calendar/calendar.hpp"
+#include "../global/global.hpp"
 
 struct engine_child {
     int x; 
@@ -22,7 +23,10 @@ class Engine {
         Engine(int padding = 10, calendar_view_mode view_mode = MONTH_VIEW);
         ~Engine();
 
-        void draw(WINDOW *win);
+        void ui_draw(WINDOW *win);
+        void ui_month_draw(WINDOW *win); 
+        void ui_months_draw(WINDOW *win);
+        void ui_bottom_draw(WINDOW *win);
 
         Calendar *calendar; 
 
