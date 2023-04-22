@@ -22,10 +22,7 @@ project(vis
  
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-add_executable(vis 
-    src/main.cpp 
-    src/calendar.cpp
-    )
+add_subdirectory(src)
 
 find_library(NCURSES_LIB NAMES ncurses)
 target_link_libraries(vis ncurses)

@@ -41,11 +41,15 @@ void Calendar::set_year(int year) {
         this->info.current_day = this->info.current_month_days; 
 }
 
+calendar_information Calendar::get_info() {
+    return this->info;
+}
+
 Calendar::Calendar(calendar_information *preinfo) {
-        this->info = *preinfo; 
-        if (preinfo != nullptr) {
+    this->info = *preinfo; 
+
+    if (preinfo != nullptr)
         return; 
-    }
 
     this->info = calendar_information(); 
 }

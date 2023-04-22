@@ -1,3 +1,6 @@
+#ifndef CALENDAR_HPP
+#define CALENDAR_HPP 
+
 struct calendar_information {
     int current_day; 
     int current_month;
@@ -16,6 +19,8 @@ class Calendar {
         calendar_information get_info();
 
         Calendar(calendar_information *preinfo = nullptr); 
-    private: 
+
+    private:
         calendar_information info; 
 }; 
+#endif
