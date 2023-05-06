@@ -13,7 +13,8 @@ struct engine_child {
 
 enum calendar_view_mode {
     MONTH_VIEW = 0, 
-    MONTHS_VIEW,
+    WEEK_VIEW,
+    MONTHS_VIEW
 };
 
 // title: drawing engine
@@ -25,10 +26,16 @@ class Engine {
 
         void ui_draw(WINDOW *win);
         void ui_month_draw(WINDOW *win); 
+        void ui_week_draw(WINDOW *win);
         void ui_months_draw(WINDOW *win);
         void ui_bottom_draw(WINDOW *win);
+        void ui_top_draw(WINDOW *win);
+
+        void input_handle_month(WINDOW *win);
+        void input_handle_months(WINDOW *win);
 
         Calendar *calendar; 
+        int active_cell;
 
         calendar_view_mode view_mode; 
         int padding; // padding
@@ -39,3 +46,4 @@ class Engine {
 };
 
 #endif
+

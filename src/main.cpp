@@ -17,10 +17,12 @@ void sig_winch(int sig) {
 
     wresize(main_win, LINES, COLS);
 
+    mvwin(main_win, 0, 0);
     // redraw the TUI after the resize signal
     engine.ui_draw(main_win);
 
     flushinp();
+    return;
 }
 
 void signals() {
@@ -30,13 +32,11 @@ void signals() {
 int main() {
     initscr();
     refresh();
-    noecho();
 
     curs_set(0); // invisible cursor 
     refresh();
 
     main_win = newwin(LINES, COLS, 0, 0);
-
     if (VIS_COLORING) {
         start_color(); 
         use_default_colors();
@@ -51,33 +51,16 @@ int main() {
     // handle required signals 
     signals();
 
+
     for (;;) {
         wclear(main_win);
         wrefresh(main_win);
         engine.ui_draw(main_win);
-       
-        char ch = getch();
-        int month;
-        switch (ch) {
-            case 'k': 
-                month = engine.calendar->get_info().current_month;
-                if (month >= 12) {
-                    month = 12; 
-                    break;
-                }
 
-                engine.calendar->set_month(++month);
-                break;
-            case 'j': 
-                month = engine.calendar->get_info().current_month;
-                if (month <= 1) {
-                    month = 1; 
-                    break;
-                }
-
-                engine.calendar->set_month(--month);
-                break;
-        }
+        if (engine.view_mode == MONTH_VIEW) 
+            engine.input_handle_month(main_win);
+        else if (engine.view_mode == MONTHS_VIEW) 
+            engine.input_handle_months(main_win);
     }
 
     endwin();
