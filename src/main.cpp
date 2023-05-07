@@ -12,12 +12,14 @@ WINDOW *main_win;
 void sig_winch(int sig) {
     if (isendwin()) return;
     endwin();
+
     wclear(main_win);
     wrefresh(main_win);
 
     wresize(main_win, LINES, COLS);
 
     mvwin(main_win, 0, 0);
+    
     // redraw the TUI after the resize signal
     engine.ui_draw(main_win);
 
@@ -51,14 +53,13 @@ int main() {
     // handle required signals 
     signals();
 
-
     for (;;) {
-        wclear(main_win);
-        wrefresh(main_win);
         engine.ui_draw(main_win);
 
         if (engine.view_mode == MONTH_VIEW) 
             engine.input_handle_month(main_win);
+        if (engine.view_mode == WEEK_VIEW) 
+            engine.input_handle_week(main_win);
         else if (engine.view_mode == MONTHS_VIEW) 
             engine.input_handle_months(main_win);
     }

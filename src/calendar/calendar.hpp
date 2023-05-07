@@ -1,6 +1,8 @@
 #ifndef CALENDAR_HPP
 #define CALENDAR_HPP 
 
+#include <tuple>
+
 struct calendar_information {
     int current_day; 
     int current_month;
@@ -9,6 +11,11 @@ struct calendar_information {
 
     calendar_information();
 }; 
+
+const bool operator<(const calendar_information& first, const calendar_information& second) {
+    return std::tie(first.current_day, first.current_month, first.current_month_days, first.current_year) < 
+           std::tie(second.current_day, second.current_month, second.current_month_days, second.current_year);
+}
 
 class Calendar {
     public: 

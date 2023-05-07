@@ -39,13 +39,14 @@ This will open the default view mode (month) and display the current month's cal
 
 The following is a list of things that have been/still have to be completed.
 
- - basic prototype with vipe (in memory only)
- - writing a calendar to file 
- - reading a calendar from a file
- - alerting function 
- - logging 
- - read input from stdin 
- - set reminder
+ - Basic prototype with vipe (in memory only)
+  - Finish all the basic shortcuts
+ - Ability to write a calendar to a file
+ - Ability to read a calendar from a file
+ - Alerting function for errors and issues 
+ - Logging / Debug flag 
+ - Read input from stdin 
+ - Set reminders
 
 # Contributions 
 

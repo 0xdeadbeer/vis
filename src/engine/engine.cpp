@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include <ncurses.h>
 #include <signal.h>
 #include "engine.hpp"
@@ -41,7 +42,6 @@ void Engine::ui_draw(WINDOW *win) {
     this->ui_top_draw(win);
     this->ui_bottom_draw(win);
     wrefresh(win);
-
 }
 
 void Engine::ui_month_draw(WINDOW *win) {
@@ -79,30 +79,11 @@ void Engine::ui_bottom_draw(WINDOW *win) {
     if (VIS_COLORING) wattron(win, COLOR_PAIR(1));
 
     calendar_information date_info = this->calendar->get_info();
-    mvwprintw(win, LINES-2, 1, "Year: %d, Month: %d, Day: %d", date_info.current_year, date_info.current_month, date_info.current_day);
+    std::string current_view_mode = calendar_view_mode_str[this->view_mode];
+
+    mvwprintw(win, LINES-2, 1, "Year: %d, Month: %d, Day: %d, Mode: %s\n", date_info.current_year, date_info.current_month, date_info.current_day, current_view_mode.c_str());
 
     if (VIS_COLORING) wattroff(win, COLOR_PAIR(1));
-}
-
-void Engine::ui_dialog_draw(WINDOW *win) {
-    int lines = LINES/2, cols = COLS/2; 
-    int y_center = (LINES/2)-(lines/2), x_center = (COLS/2)-(cols/2);
-
-    this->dialog = newwin(lines, cols, y_center, x_center);
-
-    box(this->dialog, 0, 0);
-
-    char str[200];
-
-    mvwprintw(this->dialog, 1, 1, "Enter your name lol: ");
-    wrefresh(this->dialog);
-
-    mvwgetnstr(this->dialog, 2, 1, str, 200);
-    
-    wprintw(this->dialog, "Press q to save or r to retake");
-
-    wrefresh(this->dialog);
-
 }
 
 void Engine::input_handle_month(WINDOW *win) {
@@ -162,28 +143,58 @@ void Engine::input_handle_month(WINDOW *win) {
 
             this->active_cell = 0;
             break;
-        case 'i':
-            endwin();
-            int link[2];  
-            char foo[4096];
+        case 'i': {
+            int vipe_out[2], vipe_in[2];  
+            char output_buffer[4096];
+            memset(output_buffer, 0, sizeof(output_buffer));
 
-            pipe(link);
+            pipe(vipe_out);
+            pipe(vipe_in);
             pid_t pid = fork();
 
             if (pid == 0) {
-                dup2(link[1], STDOUT_FILENO);
-                close(link[0]);
-                close(link[1]);
+                dup2(vipe_in[0], STDIN_FILENO);
+                dup2(vipe_out[1], STDOUT_FILENO);
+
+                close(vipe_in[0]);
+                close(vipe_in[1]);
+                close(vipe_out[0]);
+                close(vipe_out[1]);
+
                 system("vipe");
                 exit(EXIT_FAILURE);
             } else {
-                close(link[1]);
-                int nbytes = read(link[0], foo, sizeof(foo));
-                printw("Output of vipe: %s\n", foo);
-            }
+                close(vipe_in[0]);
+                close(vipe_out[1]);
 
+                std::string event = this->events_map[this->calendar->get_info()];
+                write(vipe_in[1], event.c_str(), event.length()); 
+                close(vipe_in[1]);
+
+                int nbytes = read(vipe_out[0], output_buffer, sizeof(output_buffer));
+                this->events_map[this->calendar->get_info()] = output_buffer;
+            }
+            
+            endwin();
+            break;
+        }
+        case 'g': 
+            this->calendar->set_day(1);
+            this->active_cell = 0;
+            break;
+        case 'G':
+            this->calendar->set_day(this->calendar->get_info().current_month_days);
+            this->active_cell = this->calendar->get_info().current_month_days-1;
+            break;
+        case 't': 
+            this->view_mode = WEEK_VIEW;
+            wclear(win);
             break;
     }
+}
+
+void Engine::input_handle_week(WINDOW *win) {
+
 }
 
 void Engine::input_handle_months(WINDOW *win) {
