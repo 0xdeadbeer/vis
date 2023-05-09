@@ -52,18 +52,29 @@ void Engine::ui_month_draw(WINDOW *win) {
         int x_location = this->padding + ((z/7) * (i%7));
         int y_location = this->padding + (q/(date_info.current_month_days/7) * (i/7));
 
-        if (this->active_cell == i) wattron(win, COLOR_PAIR(1));
+        // check if day has an event
+        // TOOD: Temporary solution
+        calendar_information tmp_date = date_info;
+        tmp_date.current_day = i+1;
+
+        if (this->events_map.count(tmp_date) > 0)
+            wattron(win, COLOR_PAIR(2));
+
+        if (this->active_cell == i) 
+            wattron(win, COLOR_PAIR(1));
+
         mvwprintw(win, y_location, x_location, "D%d", i+1);
-        if (this->active_cell == i) wattroff(win, COLOR_PAIR(1));
+        wattroff(win, COLOR_PAIR(1));
+        wattroff(win, COLOR_PAIR(2));
     }
 }
 
 void Engine::ui_week_draw(WINDOW *win) {
-
+    // TODO
 }
 
 void Engine::ui_months_draw(WINDOW *win) {
-
+    // TODO
 }
 
 void Engine::ui_top_draw(WINDOW *win) {
@@ -143,7 +154,8 @@ void Engine::input_handle_month(WINDOW *win) {
 
             this->active_cell = 0;
             break;
-        case 'i': {
+        case 'i': { // TODO: Break down this monstrocity of a case
+            endwin();
             int vipe_out[2], vipe_in[2];  
             char output_buffer[4096];
             memset(output_buffer, 0, sizeof(output_buffer));
@@ -172,10 +184,20 @@ void Engine::input_handle_month(WINDOW *win) {
                 close(vipe_in[1]);
 
                 int nbytes = read(vipe_out[0], output_buffer, sizeof(output_buffer));
-                this->events_map[this->calendar->get_info()] = output_buffer;
+
+                if (nbytes > 0) 
+                    this->events_map[this->calendar->get_info()] = output_buffer;
+                else 
+                    this->events_map.erase(this->calendar->get_info());
             }
             
-            endwin();
+            wclear(win);
+            wrefresh(win);
+            break;
+        }
+        case 'x': {
+            calendar_information date_info = this->calendar->get_info();
+            this->events_map.erase(date_info);
             break;
         }
         case 'g': 
@@ -194,7 +216,7 @@ void Engine::input_handle_month(WINDOW *win) {
 }
 
 void Engine::input_handle_week(WINDOW *win) {
-
+    // TODO
 }
 
 void Engine::input_handle_months(WINDOW *win) {
