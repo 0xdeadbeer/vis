@@ -1,7 +1,9 @@
 #include <stdlib.h>
+#include <string>
 #include <string.h>
 #include <ncurses.h>
 #include <signal.h>
+#include <regex>
 #include "engine.hpp"
 
 Engine::Engine(int padding, calendar_view_mode view_mode) {
@@ -60,12 +62,20 @@ void Engine::ui_month_draw(WINDOW *win) {
         if (this->events_map.count(tmp_date) > 0)
             wattron(win, COLOR_PAIR(2));
 
+        calendar_information current_date = this->calendar->get_current_date();
+        if (datecmp(&current_date, &tmp_date)) 
+            wattron(win, COLOR_PAIR(3));
+
         if (this->active_cell == i) 
             wattron(win, COLOR_PAIR(1));
 
-        mvwprintw(win, y_location, x_location, "D%d", i+1);
+        std::string weekday_prefix = weekday_prefixes[get_weekday(&tmp_date)];
+
+        // mvwprintw(win, y_location, x_location, "D%d", i+1);
+        mvwprintw(win, y_location, x_location, "%s[%d]", weekday_prefix.c_str(), i+1);
         wattroff(win, COLOR_PAIR(1));
         wattroff(win, COLOR_PAIR(2));
+        wattroff(win, COLOR_PAIR(3));
     }
 }
 
@@ -81,7 +91,6 @@ void Engine::ui_top_draw(WINDOW *win) {
     if (VIS_COLORING) wattron(win, COLOR_PAIR(1));
 
     mvwprintw(win, 1, 1, "Vi Scheduler");
-    mvwprintw(win, 2, 1, "@0xdeadbeer");
 
     if (VIS_COLORING) wattroff(win, COLOR_PAIR(1));
 }
@@ -97,12 +106,24 @@ void Engine::ui_bottom_draw(WINDOW *win) {
     if (VIS_COLORING) wattroff(win, COLOR_PAIR(1));
 }
 
-void Engine::input_handle_month(WINDOW *win) {
-    char key = getch();
+void Engine::input_handle(WINDOW *win) {
+    char key = getch(); 
+    
+    if (this->input_handle_universal(win, key))
+        return;
 
-    calendar_information date_info = this->calendar->get_info();
+    if (this->view_mode == MONTH_VIEW)
+        this->input_handle_month(win, key);
+    else if (this->view_mode == WEEK_VIEW) 
+        this->input_handle_week(win, key); 
+    else if (this->view_mode == MONTHS_VIEW) 
+        this->input_handle_months(win, key);
 
-    int day, month, res;
+    // fuc.
+}
+
+bool Engine::input_handle_universal(WINDOW *win, char key) {
+    int day;
     switch (key) {
         case 'h': 
             if (this->calendar->get_info().current_day <= 1) break;
@@ -128,31 +149,13 @@ void Engine::input_handle_month(WINDOW *win) {
 
             this->active_cell += 7;
             break;
-        case 'k': 
             if (this->calendar->get_info().current_day-7 < 1) break;
+        case 'k': 
 
             day = this->calendar->get_info().current_day;
             this->calendar->set_day(day-7);
 
             this->active_cell -= 7;
-            break;
-        case 'u': 
-            if (this->calendar->get_info().current_month <= 1) break;
-
-            month = this->calendar->get_info().current_month;
-            this->calendar->set_month(--month);
-            this->calendar->set_day(1);
-
-            this->active_cell = 0;
-            break;
-        case 'o':
-            if (this->calendar->get_info().current_month >= 12) break;
-
-            month = this->calendar->get_info().current_month; 
-            this->calendar->set_month(++month);
-            this->calendar->set_day(1);
-
-            this->active_cell = 0;
             break;
         case 'i': { // TODO: Break down this monstrocity of a case
             endwin();
@@ -196,10 +199,48 @@ void Engine::input_handle_month(WINDOW *win) {
             break;
         }
         case 'x': {
-            calendar_information date_info = this->calendar->get_info();
+            calendar_information date_info = this->calendar->get_info();    
             this->events_map.erase(date_info);
             break;
         }
+        case 'w': 
+            break;
+        case 'q': 
+            endwin(); 
+            exit(EXIT_SUCCESS);
+            break;
+        default: 
+            return false;
+            break;
+    } 
+
+    return true;
+}
+
+void Engine::input_handle_month(WINDOW *win, char key) {
+
+    calendar_information date_info = this->calendar->get_info();
+
+    int month;
+    switch (key) {
+       case 'u': 
+            if (this->calendar->get_info().current_month <= 1) break;
+
+            month = this->calendar->get_info().current_month;
+            this->calendar->set_month(--month);
+            this->calendar->set_day(1);
+
+            this->active_cell = 0;
+            break;
+        case 'o':
+            if (this->calendar->get_info().current_month >= 12) break;
+
+            month = this->calendar->get_info().current_month; 
+            this->calendar->set_month(++month);
+            this->calendar->set_day(1);
+
+            this->active_cell = 0;
+            break;
         case 'g': 
             this->calendar->set_day(1);
             this->active_cell = 0;
@@ -208,17 +249,55 @@ void Engine::input_handle_month(WINDOW *win) {
             this->calendar->set_day(this->calendar->get_info().current_month_days);
             this->active_cell = this->calendar->get_info().current_month_days-1;
             break;
-        case 't': 
-            this->view_mode = WEEK_VIEW;
-            wclear(win);
-            break;
     }
 }
 
-void Engine::input_handle_week(WINDOW *win) {
+void Engine::input_handle_week(WINDOW *win, char key) {
     // TODO
 }
 
-void Engine::input_handle_months(WINDOW *win) {
+void Engine::input_handle_months(WINDOW *win, char key) {
     // TODO
+}
+
+calendar_information Engine::parse_date(std::string date) {
+    char *token = strtok((char *) date.c_str(), ".");  
+    std::vector<int> tokens;
+
+    while (token != NULL) {
+        tokens.push_back(std::stoi(token));
+        token = strtok(NULL, ".");
+    }
+
+    return calendar_information(tokens[0], tokens[1], tokens[2]);
+}
+
+void Engine::parse_line(std::string line) {
+    char *token = strtok((char *) line.c_str(), " ");
+    std::vector<std::string> tokens;
+
+    while (token != NULL) {
+        tokens.push_back(token);
+        token = strtok(NULL, " ");
+    }
+
+    if (tokens.size() != 2) 
+        return;
+
+    calendar_information event_date = this->parse_date(tokens[0]); 
+    this->events_map[event_date] = tokens[1];
+}
+
+void Engine::open_calendar(char *filename) {
+    this->calendar_file.open(filename, std::ios::in | std::ios::out);
+
+    // If the file does not exist, 
+    // we'll create and reopen it later ('write' shortcut)
+    if (this->calendar_file.fail()) 
+        return;
+    
+    std::string line;
+    while (std::getline(this->calendar_file, line)) {
+        this->parse_line(line);
+    } 
 }

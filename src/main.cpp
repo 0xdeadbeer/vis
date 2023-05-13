@@ -6,7 +6,7 @@
 #include "engine/engine.hpp"
 #include "global/global.hpp"
 
-Engine engine = Engine(10, MONTH_VIEW);
+Engine engine(10, MONTH_VIEW);
 WINDOW *main_win; 
 
 void sig_winch(int sig) {
@@ -31,7 +31,25 @@ void signals() {
     signal(SIGWINCH, sig_winch);
 }
 
-int main() {
+void print_help() {
+
+}
+
+bool check_args(int argc, char **argv) {
+    if (argc != 2) {
+        print_help();
+        return false;
+    }
+
+    engine.open_calendar(argv[1]);
+
+    return true;
+}
+
+int main(int argc, char **argv) {
+    if (!check_args(argc, argv))
+        return EXIT_FAILURE;
+
     initscr();
     refresh();
 
@@ -49,6 +67,7 @@ int main() {
         init_pair(0, COLOR_WHITE, COLOR_BLACK);
         init_pair(1, COLOR_BLACK, COLOR_WHITE); 
         init_pair(2, COLOR_BLACK, COLOR_RED); 
+        init_pair(3, COLOR_BLACK, COLOR_GREEN); 
     }
 
     // handle required signals 
@@ -57,13 +76,9 @@ int main() {
     for (;;) {
         engine.ui_draw(main_win);
 
-        if (engine.view_mode == MONTH_VIEW) 
-            engine.input_handle_month(main_win);
-        if (engine.view_mode == WEEK_VIEW) 
-            engine.input_handle_week(main_win);
-        else if (engine.view_mode == MONTHS_VIEW) 
-            engine.input_handle_months(main_win);
+        engine.input_handle(main_win);
     }
+
 
     endwin();
 

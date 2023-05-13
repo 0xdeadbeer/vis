@@ -30,9 +30,11 @@ For example: `vis school.cal`
 This will open the default view mode (month) and display the current month's calendar. From there, you can use the following commands to navigate and edit the calendar: 
  - `h/j/k/l` - Move 1 day left/down/up/right
  - `u/o` - Move 1 month left/right
- - `gg` - Go to the beginning of the month
+ - `g` - Go to the beginning of the month
  - `G` - Go to the end of the month
- - `i` - Enter insert mode for the active day.
+ - `i` - Enter insert mode for selected day.
+ - `x` - Delete event from selected day.
+ - `w` - Write changes to file (i.e. save)
  - `q` - Quit and save the calendar
 
 # Todos 
