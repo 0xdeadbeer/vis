@@ -149,9 +149,8 @@ bool Engine::input_handle_universal(WINDOW *win, char key) {
 
             this->active_cell += 7;
             break;
-            if (this->calendar->get_info().current_day-7 < 1) break;
         case 'k': 
-
+            if (this->calendar->get_info().current_day-7 < 1) break;
             day = this->calendar->get_info().current_day;
             this->calendar->set_day(day-7);
 
