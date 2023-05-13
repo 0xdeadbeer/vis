@@ -2,11 +2,12 @@
 #define ENGINE_HPP 
 
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <ncurses.h>
 #include <vector>
-// #include <unordered_map>
 #include <map>
+#include "../base64/base64.h"
 #include "../calendar/calendar.hpp"
 #include "../global/global.hpp"
 
@@ -45,12 +46,14 @@ class Engine {
         ~Engine();
 
         void ui_draw(WINDOW *win);
+        void ui_warning_draw(WINDOW *win, const char *message);
         void ui_month_draw(WINDOW *win); 
         void ui_week_draw(WINDOW *win);
         void ui_months_draw(WINDOW *win);
         void ui_bottom_draw(WINDOW *win);
         void ui_top_draw(WINDOW *win);
 
+        bool input_block;
         void input_handle(WINDOW* win);
         bool input_handle_universal(WINDOW *win, char key);
         void input_handle_month(WINDOW *win, char key);
@@ -60,6 +63,7 @@ class Engine {
         calendar_information parse_date(std::string date);
         void parse_line(std::string line);
         void open_calendar(char *filename);
+        bool write_calendar();
 
         Calendar *calendar; 
         // std::unordered_map<calendar_information, std::string> events_map;
@@ -68,10 +72,10 @@ class Engine {
 
         calendar_view_mode view_mode; 
         int padding; // padding
-        
     private:
         std::vector<engine_child> cells_table;
         std::fstream calendar_file; 
+        char * calendar_file_location;
 };
 
 #endif

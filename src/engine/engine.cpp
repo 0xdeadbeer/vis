@@ -3,7 +3,6 @@
 #include <string.h>
 #include <ncurses.h>
 #include <signal.h>
-#include <regex>
 #include "engine.hpp"
 
 Engine::Engine(int padding, calendar_view_mode view_mode) {
@@ -21,6 +20,15 @@ Engine::~Engine() {
 }
 
 void Engine::ui_draw(WINDOW *win) {
+    int screen_width, screen_height;
+    getmaxyx(win, screen_height, screen_width);
+
+    if (screen_height < 25 || screen_width < 70) {
+        this->ui_warning_draw(win, "Window resolution too small, please resize it."); return;
+        return;
+    }
+
+    this->input_block = false;
     this->cells_table.clear(); 
 
     box(win, 0, 0);
@@ -43,6 +51,14 @@ void Engine::ui_draw(WINDOW *win) {
 
     this->ui_top_draw(win);
     this->ui_bottom_draw(win);
+    wrefresh(win);
+}
+
+void Engine::ui_warning_draw(WINDOW *win, const char *message) {
+    this->input_block = true;
+
+    mvwprintw(win, 0, 0, "%s", message);
+
     wrefresh(win);
 }
 
@@ -108,7 +124,10 @@ void Engine::ui_bottom_draw(WINDOW *win) {
 
 void Engine::input_handle(WINDOW *win) {
     char key = getch(); 
-    
+
+    if (this->input_block) 
+        return;
+
     if (this->input_handle_universal(win, key))
         return;
 
@@ -203,9 +222,12 @@ bool Engine::input_handle_universal(WINDOW *win, char key) {
             break;
         }
         case 'w': 
+            this->write_calendar();
             break;
         case 'q': 
             endwin(); 
+            this->calendar_file.close();
+
             exit(EXIT_SUCCESS);
             break;
         default: 
@@ -283,12 +305,20 @@ void Engine::parse_line(std::string line) {
     if (tokens.size() != 2) 
         return;
 
+    // decode the event from base64 before adding it into the events_map
     calendar_information event_date = this->parse_date(tokens[0]); 
-    this->events_map[event_date] = tokens[1];
+
+    int decoded_length = Base64decode_len((const char *) tokens[1].c_str());
+    char *event_decoded = (char *) malloc(decoded_length);
+
+    Base64decode(event_decoded, tokens[1].c_str());
+
+    this->events_map[event_date] = event_decoded;
 }
 
 void Engine::open_calendar(char *filename) {
-    this->calendar_file.open(filename, std::ios::in | std::ios::out);
+    this->calendar_file.open(filename, std::ios::in);
+    this->calendar_file_location = filename;
 
     // If the file does not exist, 
     // we'll create and reopen it later ('write' shortcut)
@@ -299,4 +329,35 @@ void Engine::open_calendar(char *filename) {
     while (std::getline(this->calendar_file, line)) {
         this->parse_line(line);
     } 
+}
+
+bool Engine::write_calendar() {
+    this->calendar_file.close();
+    this->calendar_file.open(this->calendar_file_location, std::ios::out | std::ios::trunc);
+
+    if (this->calendar_file.fail()) {
+        mvprintw(0, 0, "Error saving file.");        
+        refresh();
+        getch();
+        return false;
+    }
+
+    for (auto const& event : this->events_map) {
+        std::stringstream output_line;
+
+        calendar_information date = event.first;
+
+        int encoded_length = Base64encode_len(event.second.length());
+        char *event_encoded = (char *) malloc(encoded_length);
+        Base64encode(event_encoded, event.second.c_str(), event.second.length());
+
+        output_line << date.current_day << ".";
+        output_line << date.current_month << "."; 
+        output_line << date.current_year << " "; 
+        output_line << event_encoded;
+
+        this->calendar_file << output_line.str() << std::endl;
+    }
+    
+    return true;
 }

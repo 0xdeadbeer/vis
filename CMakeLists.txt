@@ -18,7 +18,7 @@ endif()
 project(vis
     VERSION 1.0 
     DESCRIPTION "Vi Scheduler (vis) is a simple TUI program built for managing your schedules in a calendar-like grid."
-    LANGUAGES CXX) 
+    LANGUAGES CXX C) 
  
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 

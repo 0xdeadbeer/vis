@@ -17,10 +17,10 @@ void sig_winch(int sig) {
     wrefresh(main_win);
 
     wresize(main_win, LINES, COLS);
-
     mvwin(main_win, 0, 0);
     
-    // redraw the TUI after the resize signal
+    // if the resolution is too small, output a warning
+    // else redraw the TUI 
     engine.ui_draw(main_win);
 
     flushinp();
@@ -32,7 +32,16 @@ void signals() {
 }
 
 void print_help() {
-
+    std::cout << "\
+VIS - Vim Scheduler\
+\n\
+\nUsage: vis [file]\
+\n\
+\nModes: \
+\n  - Month view (default): view the current month\
+\n  - Week view: view the current week\
+\n  - Months view: view the current year\
+" << std::endl;
 }
 
 bool check_args(int argc, char **argv) {
@@ -54,6 +63,7 @@ int main(int argc, char **argv) {
     refresh();
 
     curs_set(0); // invisible cursor 
+    noecho();
     refresh();
 
     main_win = newwin(LINES, COLS, 0, 0);
