@@ -15,11 +15,13 @@ The following is a list of dependencies that your system needs in order to be ab
  - [The Ncurses library](https://invisible-island.net/ncurses/announce.html)
  - [Moreutils](https://joeyh.name/code/moreutils/)
 
-# Building 
+# Building & Installation
 
-To build Vis, simply clone this repository and run `mkdir build; cd build; cmake ..; make`
+To build vis, simply clone this repository and run `mkdir build; cd build; cmake ..; make`
 
 Resulting binary will be generated inside the `/build/src/` folder called.
+
+For installation, you can run `sudo make install` (from the /build directory)
 
 # Usage
 

@@ -286,7 +286,12 @@ calendar_information Engine::parse_date(std::string date) {
     std::vector<int> tokens;
 
     while (token != NULL) {
-        tokens.push_back(std::stoi(token));
+        try {
+            tokens.push_back(std::stoi(token));
+        } catch (...) {
+            std::cout << "Error parsing calendar file. Suspected incorrect format." << std::endl;
+            exit(EXIT_FAILURE);
+        }
         token = strtok(NULL, ".");
     }
 
@@ -314,6 +319,7 @@ void Engine::parse_line(std::string line) {
     Base64decode(event_decoded, tokens[1].c_str());
 
     this->events_map[event_date] = event_decoded;
+    free(event_decoded);
 }
 
 void Engine::open_calendar(char *filename) {
@@ -324,11 +330,11 @@ void Engine::open_calendar(char *filename) {
     // we'll create and reopen it later ('write' shortcut)
     if (this->calendar_file.fail()) 
         return;
-    
+
     std::string line;
-    while (std::getline(this->calendar_file, line)) {
+    while (std::getline(this->calendar_file, line)) 
         this->parse_line(line);
-    } 
+
 }
 
 bool Engine::write_calendar() {
@@ -357,6 +363,7 @@ bool Engine::write_calendar() {
         output_line << event_encoded;
 
         this->calendar_file << output_line.str() << std::endl;
+        free(event_encoded);
     }
     
     return true;
