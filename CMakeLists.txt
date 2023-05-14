@@ -19,10 +19,14 @@ project(vis
     VERSION 1.0 
     DESCRIPTION "Vi Scheduler (vis) is a simple TUI program built for managing your schedules in a calendar-like grid."
     LANGUAGES CXX C) 
+
  
-set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 add_subdirectory(src)
 
 find_library(NCURSES_LIB NAMES ncurses)
 target_link_libraries(vis ncurses)
+install(TARGETS vis DESTINATION bin)
