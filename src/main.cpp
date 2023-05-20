@@ -6,25 +6,11 @@
 #include "engine/engine.hpp"
 #include "global/global.hpp"
 
-Engine engine(10, MONTH_VIEW);
+Engine engine(10);
 WINDOW *main_win; 
 
 void sig_winch(int sig) {
-    if (isendwin()) return;
-    endwin();
-
-    wclear(main_win);
-    wrefresh(main_win);
-
-    wresize(main_win, LINES, COLS);
-    mvwin(main_win, 0, 0);
-    
-    // if the resolution is too small, output a warning
-    // else redraw the TUI 
-    engine.ui_draw(main_win);
-
-    flushinp();
-    return;
+    winch_flag = 1;
 }
 
 void signals() {
@@ -64,6 +50,7 @@ int main(int argc, char **argv) {
 
     curs_set(0); // invisible cursor 
     noecho();
+    halfdelay(1);
     refresh();
 
     main_win = newwin(LINES, COLS, 0, 0);
@@ -84,8 +71,17 @@ int main(int argc, char **argv) {
     signals();
 
     for (;;) {
-        engine.ui_draw(main_win);
+        if (winch_flag) {
+            winch_flag = 0; 
+            endwin();
+            wrefresh(main_win);
+            wclear(main_win);
 
+            wresize(main_win, LINES, COLS);
+            mvwin(main_win, 0, 0);
+        }
+
+        engine.ui_draw(main_win);
         engine.input_handle(main_win);
     }
 

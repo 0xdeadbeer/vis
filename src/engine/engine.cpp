@@ -5,10 +5,8 @@
 #include <signal.h>
 #include "engine.hpp"
 
-Engine::Engine(int padding, calendar_view_mode view_mode) {
+Engine::Engine(int padding) {
     this->padding = padding;
-    this->view_mode = view_mode;
-    this->cells_table = std::vector<engine_child>();
 
     calendar_information date_info = calendar_information();
     this->calendar = new Calendar(&date_info);
@@ -24,38 +22,24 @@ void Engine::ui_draw(WINDOW *win) {
     getmaxyx(win, screen_height, screen_width);
 
     if (screen_height < 25 || screen_width < 70) {
-        this->ui_warning_draw(win, "Window resolution too small, please resize it."); return;
+        this->ui_warning_draw(win, "Window resolution too small, please resize it."); 
         return;
     }
 
-    this->input_block = false;
-    this->cells_table.clear(); 
-
+    low_res_flag = 0;
     box(win, 0, 0);
-    wrefresh(win);
 
     keypad(win, TRUE);
     keypad(stdscr, TRUE);
 
-    switch (this->view_mode) {
-        case MONTH_VIEW:
-            this->ui_month_draw(win);
-            break;
-        case WEEK_VIEW:
-            this->ui_week_draw(win);
-            break;
-        case MONTHS_VIEW:
-            this->ui_months_draw(win);
-            break;
-    }
-
+    this->ui_month_draw(win);
     this->ui_top_draw(win);
     this->ui_bottom_draw(win);
     wrefresh(win);
 }
 
 void Engine::ui_warning_draw(WINDOW *win, const char *message) {
-    this->input_block = true;
+    low_res_flag = 1;
 
     mvwprintw(win, 0, 0, "%s", message);
 
@@ -71,7 +55,7 @@ void Engine::ui_month_draw(WINDOW *win) {
         int y_location = this->padding + (q/(date_info.current_month_days/7) * (i/7));
 
         // check if day has an event
-        // TOOD: Temporary solution
+        // TODO: Temporary solution
         calendar_information tmp_date = date_info;
         tmp_date.current_day = i+1;
 
@@ -95,14 +79,6 @@ void Engine::ui_month_draw(WINDOW *win) {
     }
 }
 
-void Engine::ui_week_draw(WINDOW *win) {
-    // TODO
-}
-
-void Engine::ui_months_draw(WINDOW *win) {
-    // TODO
-}
-
 void Engine::ui_top_draw(WINDOW *win) {
     if (VIS_COLORING) wattron(win, COLOR_PAIR(1));
 
@@ -115,9 +91,8 @@ void Engine::ui_bottom_draw(WINDOW *win) {
     if (VIS_COLORING) wattron(win, COLOR_PAIR(1));
 
     calendar_information date_info = this->calendar->get_info();
-    std::string current_view_mode = calendar_view_mode_str[this->view_mode];
 
-    mvwprintw(win, LINES-2, 1, "Year: %d, Month: %d, Day: %d, Mode: %s\n", date_info.current_year, date_info.current_month, date_info.current_day, current_view_mode.c_str());
+    mvwprintw(win, LINES-2, 1, "Year: %d, Month: %d, Day: %d\n", date_info.current_year, date_info.current_month, date_info.current_day);
 
     if (VIS_COLORING) wattroff(win, COLOR_PAIR(1));
 }
@@ -125,57 +100,19 @@ void Engine::ui_bottom_draw(WINDOW *win) {
 void Engine::input_handle(WINDOW *win) {
     char key = getch(); 
 
-    if (this->input_block) 
-        return;
+    if (key == ERR) return;
+    if (low_res_flag) return;
 
     if (this->input_handle_universal(win, key))
         return;
 
-    if (this->view_mode == MONTH_VIEW)
-        this->input_handle_month(win, key);
-    else if (this->view_mode == WEEK_VIEW) 
-        this->input_handle_week(win, key); 
-    else if (this->view_mode == MONTHS_VIEW) 
-        this->input_handle_months(win, key);
-
-    // fuc.
+    this->input_handle_month(win, key);
 }
 
 bool Engine::input_handle_universal(WINDOW *win, char key) {
     int day;
     switch (key) {
-        case 'h': 
-            if (this->calendar->get_info().current_day <= 1) break;
-
-            day = this->calendar->get_info().current_day; 
-            this->calendar->set_day(--day);
-
-            --this->active_cell;
-            break;
-        case 'l': 
-            if (this->calendar->get_info().current_day >= this->calendar->get_info().current_month_days) break;
-
-            day = this->calendar->get_info().current_day; 
-            this->calendar->set_day(++day);
-
-            ++this->active_cell;
-            break;
-        case 'j': 
-            if (this->calendar->get_info().current_day+7 > this->calendar->get_info().current_month_days) break;
-
-            day = this->calendar->get_info().current_day;
-            this->calendar->set_day(day+7);
-
-            this->active_cell += 7;
-            break;
-        case 'k': 
-            if (this->calendar->get_info().current_day-7 < 1) break;
-            day = this->calendar->get_info().current_day;
-            this->calendar->set_day(day-7);
-
-            this->active_cell -= 7;
-            break;
-        case 'i': { // TODO: Break down this monstrocity of a case
+       case 'i': { // TODO: Break down this monstrocity of a case
             endwin();
             int vipe_out[2], vipe_in[2];  
             char output_buffer[4096];
@@ -239,11 +176,41 @@ bool Engine::input_handle_universal(WINDOW *win, char key) {
 }
 
 void Engine::input_handle_month(WINDOW *win, char key) {
-
     calendar_information date_info = this->calendar->get_info();
 
-    int month;
+    int day, month;
     switch (key) {
+         case 'h': 
+            if (this->calendar->get_info().current_day <= 1) break;
+
+            day = this->calendar->get_info().current_day; 
+            this->calendar->set_day(--day);
+
+            --this->active_cell;
+            break;
+        case 'l': 
+            if (this->calendar->get_info().current_day >= this->calendar->get_info().current_month_days) break;
+
+            day = this->calendar->get_info().current_day; 
+            this->calendar->set_day(++day);
+
+            ++this->active_cell;
+            break;
+        case 'j': 
+            if (this->calendar->get_info().current_day+7 > this->calendar->get_info().current_month_days) break;
+
+            day = this->calendar->get_info().current_day;
+            this->calendar->set_day(day+7);
+
+            this->active_cell += 7;
+            break;
+        case 'k': 
+            if (this->calendar->get_info().current_day-7 < 1) break;
+            day = this->calendar->get_info().current_day;
+            this->calendar->set_day(day-7);
+
+            this->active_cell -= 7;
+            break;
        case 'u': 
             if (this->calendar->get_info().current_month <= 1) break;
 
@@ -271,14 +238,6 @@ void Engine::input_handle_month(WINDOW *win, char key) {
             this->active_cell = this->calendar->get_info().current_month_days-1;
             break;
     }
-}
-
-void Engine::input_handle_week(WINDOW *win, char key) {
-    // TODO
-}
-
-void Engine::input_handle_months(WINDOW *win, char key) {
-    // TODO
 }
 
 calendar_information Engine::parse_date(std::string date) {
@@ -334,7 +293,6 @@ void Engine::open_calendar(char *filename) {
     std::string line;
     while (std::getline(this->calendar_file, line)) 
         this->parse_line(line);
-
 }
 
 bool Engine::write_calendar() {

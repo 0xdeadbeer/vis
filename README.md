@@ -2,16 +2,13 @@
 
 Vi Scheduler (VIS) is a lightweight tool that brings a Vim-like calendar to your terminal. It allows you to quickly view and edit your schedule, appointments, and tasks without leaving your command-line interface. 
 
-Built using C++ and the Ncurses library, Vis offers a fast and efficient way to manage your time in the terminal. It suppors various navigation and editing commands inspired by Vim, such as navigating between days or months, adding and deleting events, and setting reminders.
+Built using C++ and the Ncurses library, vis offers a fast and efficient way to manage your time in the terminal. It suppors various navigation and editing commands inspired by Vim, such as navigating between days or months, adding and deleting events.
 
-# Features 
-
- - Vim-like navigation and editing commands
- - Multiple view modes: month, week
+![Vi Scheduler - Preview](./preview/preview.png)
 
 # Dependencies 
 
-The following is a list of dependencies that your system needs in order to be able to run Vis. 
+The following is a list of dependencies that your system needs in order to be able to run vis. 
  - [The Ncurses library](https://invisible-island.net/ncurses/announce.html)
  - [Moreutils](https://joeyh.name/code/moreutils/)
 
@@ -25,7 +22,7 @@ For installation, you can run `sudo make install` (from the /build directory)
 
 # Usage
 
-To start Vis simply run the `vis` binary in your terminal alongside the name of the calendar file.
+To start vis simply run the `vis` binary in your terminal alongside the name of the calendar file.
 
 For example: `vis school.cal`
 
@@ -44,17 +41,16 @@ This will open the default view mode (month) and display the current month's cal
 The following is a list of things that have been/still have to be completed.
 
  - ~~Basic prototype with vipe (in memory only)~~
-  - Finish all the basic shortcuts
- - Ability to write a calendar to a file
- - Ability to read a calendar from a file
+  - ~~Finish all the basic shortcuts~~
+ - ~~Ability to write a calendar to a file~~
+ - ~~Ability to read a calendar from a file~~
  - Alerting function for errors and issues 
  - Logging / Debug flag 
  - Read input from stdin 
- - Set reminders
 
 # Contributions 
 
-Contributions and feedback are welcome! If you have any ideas or suggestions for improving Vis, please submit a pull request or open an issue on Github. Let's make the FOSS community better, together!
+Contributions and feedback are welcome! If you have any ideas or suggestions for improving vis, please submit a pull request or open an issue on Github. Let's make the FOSS community better, together!
 
 # License 
 

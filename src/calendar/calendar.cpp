@@ -67,6 +67,9 @@ Calendar::Calendar(calendar_information *preinfo) {
 }
 
 // https://stackoverflow.com/questions/6054016/c-program-to-find-day-of-week-given-date
+// RETURNS:
+// Number of the given day in its week. 
+//  Note: it starts with sunday being 0
 int get_weekday(calendar_information *date_info) {
     if (date_info == nullptr) 
         return 0;
