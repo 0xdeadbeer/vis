@@ -33,6 +33,8 @@ This will open the default view mode (month) and display the current month's cal
  - `G` - Go to the end of the month
  - `i` - Enter insert mode for selected day.
  - `x` - Delete event from selected day.
+ - `y` - Copy event
+ - `p` - Paste event
  - `w` - Write changes to file (i.e. save)
  - `q` - Quit and save the calendar
 
