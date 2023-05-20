@@ -167,6 +167,15 @@ bool Engine::input_handle_universal(WINDOW *win, char key) {
 
             exit(EXIT_SUCCESS);
             break;
+        case 'y':
+            this->clipboard_day = this->calendar->get_info(); 
+            break;
+        case 'p': 
+            if (this->events_map.find(this->clipboard_day) == this->events_map.end()) 
+                break;
+
+            this->events_map[this->calendar->get_info()] = this->events_map[this->clipboard_day];
+            break;
         default: 
             return false;
             break;
@@ -237,7 +246,7 @@ void Engine::input_handle_month(WINDOW *win, char key) {
             this->calendar->set_day(this->calendar->get_info().current_month_days);
             this->active_cell = this->calendar->get_info().current_month_days-1;
             break;
-    }
+   }
 }
 
 calendar_information Engine::parse_date(std::string date) {

@@ -45,14 +45,15 @@ class Engine {
         bool write_calendar();
 
         Calendar *calendar; 
-        // std::unordered_map<calendar_information, std::string> events_map;
+
         std::map<calendar_information, std::string> events_map;
         int active_cell;
 
-        int padding; // padding
+        int padding; // GUI padding
     private:
         std::fstream calendar_file; 
-        char * calendar_file_location;
+        char *calendar_file_location;
+        calendar_information clipboard_day;
 };
 
 #endif

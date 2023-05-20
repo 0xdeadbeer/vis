@@ -47,6 +47,7 @@ The following is a list of things that have been/still have to be completed.
  - Alerting function for errors and issues 
  - Logging / Debug flag 
  - Read input from stdin 
+ - ~~Shortcut: ability to clone an event into another day~~
 
 # Contributions 
 
